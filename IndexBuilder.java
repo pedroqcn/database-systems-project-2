@@ -30,6 +30,14 @@ public class IndexBuilder {
         }
     }
 
+    public HashMap<Integer, List<int[]>> getHashIndex() {
+        return hashIndex;
+    }
+
+    public List<int[]>[] getArrayIndex() {
+        return arrayIndex;
+    }
+
     public static void main(String[] args) throws Exception {
         IndexBuilder ib = new IndexBuilder();
         ib.build();
