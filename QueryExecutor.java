@@ -78,9 +78,10 @@ public class QueryExecutor {
 
         // Track which distinct file we've opened
         Set<Integer> filesRead = new HashSet<>();
+        int matchCount = 0;
 
         // For each value in the range, loop through the array index
-        for (int i = v1; i <= v2; i++) {
+        for (int i = v1 + 1; i <= v2 - 1; i++) {
             if (arrayIndex[i] == null) {
                 continue;
             }
@@ -99,24 +100,57 @@ public class QueryExecutor {
                 raf.close();
 
                 System.out.println(new String(buf));
+                matchCount++;
                 filesRead.add(fileId);
             }
         }
 
         long elapsed = System.currentTimeMillis() - startTime;
         System.out.println("Index used: Array");
-        System.out.println("Found " + (v2 - v1 + 1) + " records.");
+        System.out.println("Found " + matchCount + " records.");
         System.out.println("Elapsed time: " + elapsed + "ms");
         System.out.println("Files read: " + filesRead.size());
     }
 
+    public void inequalityQuery(int value) throws Exception {
+        long startTime = System.currentTimeMillis();
+
+        int filesRead = 0;
+        int matchCount = 0;
+
+        for (int fileId = 1; fileId <= 99; fileId++){
+            String path = "Project2Dataset/F" + fileId + ".txt";
+            byte[] data = Files.readAllBytes(Paths.get(path));
+            filesRead++;
+
+            for (int j = 0; j < 100; j++) {
+                int offset = j * 40;
+                String randomV = new String(data, offset + 33, 4);
+                int recordValue = Integer.parseInt(randomV);
+
+                if (recordValue != value){
+                    System.out.println(new String(data, offset, 40));
+                    matchCount++;
+                }
+            }
+        }
+
+        long elapsed = System.currentTimeMillis() - startTime;
+        System.out.println("Index used: Table Scan");
+        System.out.println("Found " + matchCount + " records.");
+        System.out.println("Elapsed time: " + elapsed + "ms");
+        System.out.println("Files read: " + filesRead);
+    }
+
     private void fullScanEquality(int value, long startTime) throws Exception {
         int filesRead = 0;
+        int matchCount = 0;
 
         // Loop through every file in the dataset
         for (int fileId = 1; fileId <= 99; fileId++){
             String path = "Project2Dataset/F" + fileId + ".txt";
             byte[] data = Files.readAllBytes(Paths.get(path));
+            filesRead++;
 
             // Loop through every record in the file
             for (int j = 0; j < 100; j++) {
@@ -129,19 +163,21 @@ public class QueryExecutor {
                 // If the value matches, print the record
                 if (recordValue == value) {
                     System.out.println(new String(data, offset, 40));
-                    filesRead++;
+                    matchCount++;
                 }
             }
         }
 
         long elapsed = System.currentTimeMillis() - startTime;
         System.out.println("Index used: Table Scan");
-        System.out.println("Found " + filesRead + " records.");
+        System.out.println("Found " + matchCount + " records.");
         System.out.println("Elapsed time: " + elapsed + "ms");
+        System.out.println("Files read: " + filesRead);
     }
 
     private void fullScanRange(int v1, int v2, long startTime) throws Exception {
         int filesRead = 0;
+        int matchCount = 0;
 
         // Loop through every file in the dataset
         for (int fileId = 1; fileId <= 99; fileId++){
@@ -156,13 +192,15 @@ public class QueryExecutor {
 
                 if (recordValue > v1 && recordValue < v2) {
                     System.out.println(new String(data, offset, 40));
+                    matchCount++;
                 }
             }
         }
 
         long elapsed = System.currentTimeMillis() - startTime;
         System.out.println("Index used: Table Scan");
-        System.out.println("Found " + filesRead + " records.");
+        System.out.println("Found " + matchCount + " records.");
         System.out.println("Elapsed time: " + elapsed + "ms");
+        System.out.println("Files read: " + filesRead);
     }
 }
